@@ -1,0 +1,16 @@
+# OS / エディタ
+Thumbs.db
+.DS_Store
+*.swp
+.vscode/
+.idea/
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+
+# 作業中の控え
+*.orig
+*.bak
+scratch/

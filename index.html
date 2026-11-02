@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e0f12">
+<title>磨｜鬼教官があなたの一日を裁定する記録サイト</title>
+<meta name="description" content="タイマーで計った時間だけが点になる。自己申告をやめた記録所。3日ごとに格付けし、鬼教官が傾向を暴いて、このままの未来を容赦なく予想する。">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="磨">
+<meta property="og:title" content="磨｜鬼教官が、お前の一日を裁定する">
+<meta property="og:description" content="計った時間だけが点になる。書いた時間は半分しか通らない。3日ごとに格付けし、積み上げは刃になる。">
+<meta property="og:url" content="https://aiueo98765.github.io/migaki/">
+<meta property="og:image" content="https://aiueo98765.github.io/migaki/card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="磨｜鬼教官が、お前の一日を裁定する">
+<meta name="twitter:description" content="計った時間だけが点になる。書いた時間は半分しか通らない。3日ごとに格付けし、積み上げは刃になる。">
+<meta name="twitter:image" content="https://aiueo98765.github.io/migaki/card.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@600;900&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e0f12'/%3E%3Cpath d='M8 24L24 8M11 8h13v13' stroke='%23e23b3b' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<!-- 地の質感。粒子と四隅の落ち込み。 -->
+<div class="grain" aria-hidden="true"></div>
+<div class="vign" aria-hidden="true"></div>
+
+<!-- ═══════════ 上の帯 ═══════════ -->
+<header class="top">
+  <div class="top-brand">
+    <svg viewBox="0 0 32 32" width="24" height="24" aria-hidden="true">
+      <path d="M8 24L24 8M11 8h13v13" stroke="#e23b3b" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>
+    <b>磨</b>
+  </div>
+
+  <button class="top-rank" id="topRank" type="button" title="戦績を見る">
+    <span class="rk-letter" id="rkLetter">—</span>
+    <span class="rk-meta">
+      <span class="rk-name" id="rkName">未判定</span>
+      <span class="rk-cycle" id="rkCycle">第1期</span>
+    </span>
+  </button>
+
+  <div class="top-right">
+    <span class="coin" id="coinView" title="鍛錬石"><i>◆</i><b id="coinNum">0</b></span>
+    <button class="icon-btn" id="btnSettings" type="button" title="設定">⚙</button>
+  </div>
+</header>
+
+<!-- ═══════════ 計測の帯（走っている時だけ出る） ═══════════ -->
+<div class="tbar" id="timerBar" hidden>
+  <div class="tbar-in">
+    <span class="tbar-dot" id="tbDot"></span>
+    <span class="tbar-what" id="tbWhat">—</span>
+    <b class="tbar-time" id="tbTime">00:00</b>
+    <span class="tbar-away" id="tbAway"></span>
+    <button class="tbar-stop" id="tbStop" type="button">止めて記録</button>
+  </div>
+  <i class="tbar-sweep" id="tbSweep"></i>
+</div>
+
+<!-- ═══════════ 本体 ═══════════ -->
+<main id="main">
+
+  <!-- ───── 今日 ───── -->
+  <section class="view" id="view-today">
+
+    <div class="daybar">
+      <button class="daybar-nav" id="dayPrev" type="button" aria-label="前の日">‹</button>
+      <div class="daybar-mid">
+        <b id="dayLabel">—</b>
+        <span id="dayRel">今日</span>
+      </div>
+      <button class="daybar-nav" id="dayNext" type="button" aria-label="次の日">›</button>
+    </div>
+
+    <div class="locked" id="lockBar" hidden></div>
+
+    <!-- 本日のスコア -->
+    <div class="card score-card">
+      <div class="score-main">
+        <div class="score-num"><b id="dayScore">0</b><span>点</span></div>
+        <div class="score-side">
+          <div class="score-judge" id="dayJudge">記録なし</div>
+          <div class="score-bars" id="scoreBars"></div>
+        </div>
+      </div>
+      <div class="score-break" id="scoreBreak"></div>
+    </div>
+
+    <!-- 追走 — 過去の自分と同じ時刻で並ぶ -->
+    <div class="card chase-card">
+      <div class="card-h-row">
+        <h2 class="card-h">追走 <span class="card-h-sub" id="chaseSub"></span></h2>
+        <div class="seg" id="chaseSeg"></div>
+      </div>
+      <div class="chase-read" id="chaseRead"></div>
+      <div class="chart-wrap"><canvas id="chaseChart"></canvas></div>
+    </div>
+
+    <!-- ミッション -->
+    <div class="card" id="missionCard">
+      <h2 class="card-h">本日の課業 <span class="card-h-sub" id="missionSub"></span></h2>
+      <ul class="mission-list" id="missionList"></ul>
+    </div>
+
+    <!-- 活動記録 -->
+    <div class="card">
+      <h2 class="card-h">活動記録 <span class="card-h-sub" id="actSub"></span></h2>
+
+      <div class="cat-pills" id="catPills"></div>
+
+      <!-- 計測中の札 -->
+      <div class="run" id="runBox" hidden>
+        <div class="run-top">
+          <span class="run-dot"></span>
+          <span class="run-what" id="runWhat">—</span>
+        </div>
+        <div class="run-time"><b id="runTime">00:00</b><span id="runAway"></span></div>
+        <div class="run-btns">
+          <button class="btn-primary" id="runStop" type="button">止めて記録する</button>
+          <button class="btn-ghost" id="runDrop" type="button">捨てる</button>
+        </div>
+      </div>
+
+      <!-- 計測を始める -->
+      <div class="act-form" id="startBox">
+        <input id="actLabel" type="text" placeholder="何をやる？（例: 数学 二次関数）" autocomplete="off">
+        <button class="btn-primary big start-btn" id="actStart" type="button">
+          <i class="pl"></i><span>計測を始める</span>
+        </button>
+        <div class="quick-row" id="quickRow"></div>
+      </div>
+
+      <!-- 手で書く（申告） -->
+      <details class="decl" id="declBox">
+        <summary>手で書く<em>申告扱い・点は半分</em></summary>
+        <div class="act-row">
+          <div class="minbox">
+            <button type="button" data-min="-15">−15</button>
+            <input id="actMin" type="number" min="0" max="1440" step="5" value="30" inputmode="numeric">
+            <span class="minbox-u">分</span>
+            <button type="button" data-min="15">+15</button>
+          </div>
+          <button class="btn-sub" id="actAdd" type="button">申告する</button>
+        </div>
+        <p class="hint">タイマーを回さなかった分は半分しか通らない。目標に届いたかどうかも、この通った分で見る。段位にも積まれない。後から思い出して書いた時間は、やった事の証拠にならないからだ。</p>
+      </details>
+
+      <ul class="act-list" id="actList"></ul>
+    </div>
+
+    <!-- 段位 -->
+    <div class="card">
+      <h2 class="card-h">段位 <span class="card-h-sub" id="danSub"></span></h2>
+      <ul class="dan-list" id="danList"></ul>
+    </div>
+
+    <!-- TODO -->
+    <div class="card">
+      <h2 class="card-h">やる事 <span class="card-h-sub" id="todoSub"></span></h2>
+      <div class="todo-meter">
+        <div class="todo-meter-bar"><i id="todoBar"></i></div>
+        <b id="todoPct">—</b>
+      </div>
+      <form class="todo-form" id="todoForm">
+        <input id="todoText" type="text" placeholder="やる事を書く" autocomplete="off">
+        <select id="todoWeight" aria-label="重み">
+          <option value="1">軽</option>
+          <option value="2" selected>並</option>
+          <option value="3">重</option>
+          <option value="5">山場</option>
+        </select>
+        <button class="btn-primary" type="submit">追加</button>
+      </form>
+      <ul class="todo-list" id="todoList"></ul>
+      <div class="carry" id="carryBox"></div>
+    </div>
+
+    <!-- 体調・節制 -->
+    <div class="card">
+      <h2 class="card-h">体と節制</h2>
+      <div class="vital-grid">
+        <label class="vital">
+          <span>睡眠</span>
+          <div class="vital-in"><input id="vSleep" type="number" min="0" max="1200" step="10" inputmode="numeric" placeholder="420"><i>分</i></div>
+        </label>
+        <label class="vital">
+          <span>起床</span>
+          <div class="vital-in"><input id="vWake" type="time" step="300"></div>
+        </label>
+        <label class="vital">
+          <span>体重</span>
+          <div class="vital-in"><input id="vWeight" type="number" min="0" max="300" step="0.1" inputmode="decimal" placeholder="—"><i>kg</i></div>
+        </label>
+        <label class="vital">
+          <span>気分</span>
+          <div class="vital-in"><input id="vMood" type="range" min="1" max="5" step="1" value="3"><b id="vMoodV">3</b></div>
+        </label>
+      </div>
+      <div class="chk-row" id="chkRow"></div>
+      <textarea id="dayNote" class="note" rows="2" placeholder="今日の一行。言い訳は書かなくていい。"></textarea>
+    </div>
+
+    <!-- スクリーンタイム -->
+    <div class="card">
+      <h2 class="card-h">スクリーンタイム <span class="card-h-sub" id="stSub"></span></h2>
+      <div class="st-head">
+        <div class="st-total">
+          <b id="stTotal">0</b><span>分</span>
+          <em id="stLimitTag"></em>
+        </div>
+        <div class="st-gauge"><i id="stGauge"></i><u id="stMark"></u></div>
+      </div>
+      <ul class="st-list" id="stList"></ul>
+      <div class="st-form">
+        <input id="stApp" type="text" placeholder="アプリ名" list="stAppList" autocomplete="off">
+        <datalist id="stAppList"></datalist>
+        <input id="stMin" type="number" min="0" max="1440" step="5" placeholder="分" inputmode="numeric">
+        <button class="btn-sub" id="stAdd" type="button">記録</button>
+      </div>
+      <p class="hint" id="stHint"></p>
+    </div>
+
+  </section>
+
+  <!-- ───── 暦 ───── -->
+  <section class="view" id="view-cal" hidden>
+    <div class="daybar">
+      <button class="daybar-nav" id="monPrev" type="button" aria-label="前の月">‹</button>
+      <div class="daybar-mid"><b id="monLabel">—</b><span id="monStat"></span></div>
+      <button class="daybar-nav" id="monNext" type="button" aria-label="次の月">›</button>
+    </div>
+
+    <div class="card">
+      <div class="cal" id="cal"></div>
+      <div class="cal-key">
+        <span><i style="background:#2a2e37"></i>未記録</span>
+        <span><i style="background:#5b2222"></i>赤字</span>
+        <span><i style="background:#3a4150"></i>並</span>
+        <span><i style="background:#2f6b4f"></i>上</span>
+        <span><i style="background:#d9a441"></i>別格</span>
+      </div>
+    </div>
+
+    <div class="card" id="calDetail"></div>
+
+    <div class="card">
+      <div class="card-h-row">
+        <h2 class="card-h">推移</h2>
+        <div class="seg" id="trendTabs"></div>
+      </div>
+      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      <div class="chart-foot" id="chartFoot"></div>
+    </div>
+  </section>
+
+  <!-- ───── 戦績 ───── -->
+  <section class="view" id="view-rank" hidden>
+
+    <!-- 刃 — 積み上げたものが形になる -->
+    <div class="card blade-card">
+      <canvas id="blade"></canvas>
+      <div class="blade-tags" id="bladeTags"></div>
+      <div class="blade-read" id="bladeRead"></div>
+    </div>
+
+    <div class="card rank-hero" id="rankHero"></div>
+
+    <div class="card">
+      <h2 class="card-h">三日裁定 <span class="card-h-sub">3日ごとに格付けし直す</span></h2>
+      <div class="cycle-now" id="cycleNow"></div>
+      <ul class="cycle-list" id="cycleList"></ul>
+    </div>
+
+    <div class="card">
+      <h2 class="card-h">自己最高 <span class="card-h-sub">超えるべき相手は過去の自分</span></h2>
+      <ul class="best-list" id="bestList"></ul>
+    </div>
+
+    <div class="card">
+      <h2 class="card-h">対戦 <span class="card-h-sub">符を交換して並べる</span></h2>
+      <div class="vs-wrap" id="vsWrap"></div>
+      <div class="vs-form">
+        <button class="btn-sub" id="vsCopy" type="button">自分の符を写す</button>
+        <input id="vsCode" type="text" placeholder="相手の符を貼る" autocomplete="off">
+        <button class="btn-primary" id="vsLoad" type="button">読む</button>
+      </div>
+      <p class="hint">符はただの文字列です。LINE や X で送り合ってください。サーバーは通りません。</p>
+    </div>
+
+    <div class="card">
+      <h2 class="card-h">階級表</h2>
+      <ul class="ladder" id="ladder"></ul>
+    </div>
+  </section>
+
+  <!-- ───── 教官 ───── -->
+  <section class="view" id="view-ai" hidden>
+
+    <div class="card">
+      <h2 class="card-h">進捗要約 <span class="card-h-sub" id="sumSub"></span></h2>
+      <div class="sum-grid" id="sumGrid"></div>
+    </div>
+
+    <!-- 作戦 — 教官が次の3日を組む -->
+    <div class="card plan-card">
+      <div class="card-h-row">
+        <h2 class="card-h">作戦 <span class="card-h-sub" id="planSub">次の3日をここで決める</span></h2>
+        <button class="btn-gold" id="btnPlan" type="button">組ませる</button>
+      </div>
+      <div class="plan" id="planBox"></div>
+    </div>
+
+    <!-- 良い日の型 -->
+    <div class="card">
+      <h2 class="card-h">良い日の型 <span class="card-h-sub" id="shapeSub">強い日と弱い日の差を出す</span></h2>
+      <div class="shape" id="shapeBox"></div>
+    </div>
+
+    <!-- 効いている順 -->
+    <div class="card">
+      <h2 class="card-h">効いている順 <span class="card-h-sub">点を動かしている要因</span></h2>
+      <ul class="weigh" id="weighList"></ul>
+      <p class="hint">これは相関で、因果の証明ではない。だが記録の中では、これが一番強く効いている。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-h-row">
+        <h2 class="card-h">分析 <span class="card-h-sub">記録から逃げ場を潰す</span></h2>
+        <button class="btn-sub" id="btnAnalyze" type="button">やり直す</button>
+      </div>
+      <ul class="find-list" id="findList"></ul>
+    </div>
+
+    <div class="card">
+      <div class="card-h-row">
+        <h2 class="card-h">未来予想 <span class="card-h-sub">この調子を伸ばすとこうなる</span></h2>
+        <div class="seg" id="futSeg"></div>
+      </div>
+      <div class="future" id="future"></div>
+    </div>
+
+    <div class="card chat-card">
+      <h2 class="card-h">鬼教官に相談 <span class="card-h-sub" id="chatMode"></span></h2>
+      <div class="chat-log" id="chatLog"></div>
+      <div class="chat-sug" id="chatSug"></div>
+      <form class="chat-form" id="chatForm">
+        <input id="chatText" type="text" placeholder="聞きたい事を書く" autocomplete="off">
+        <button class="btn-primary" type="submit">送る</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ───── 報酬 ───── -->
+  <section class="view" id="view-gacha" hidden>
+
+    <div class="card gacha-card">
+      <div class="gacha-stone">
+        <b id="gCoin">0</b><span>鍛錬石</span>
+        <em id="gRate"></em>
+      </div>
+      <div class="gacha-btns">
+        <button class="btn-primary big" id="pull1" type="button">一回 <i>30</i></button>
+        <button class="btn-gold big" id="pull10" type="button">十連 <i>270</i></button>
+      </div>
+      <div class="pity"><div class="pity-bar"><i id="pityBar"></i></div><span id="pityTxt"></span></div>
+      <div class="gacha-stage" id="gachaStage"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-h">称号 <span class="card-h-sub" id="titleSub"></span></h2>
+      <div class="coll" id="collTitles"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-h">修行札 <span class="card-h-sub">引いた札は翌日の課業になる</span></h2>
+      <div class="coll" id="collMissions"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-h">語録 <span class="card-h-sub" id="wordSub"></span></h2>
+      <div class="coll word-coll" id="collWords"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════ 下の帯 ═══════════ -->
+<nav class="tabs" id="tabs">
+  <button data-view="today" class="on" type="button"><i>▣</i><span>今日</span></button>
+  <button data-view="cal" type="button"><i>▦</i><span>暦</span></button>
+  <button data-view="rank" type="button"><i>▲</i><span>戦績</span></button>
+  <button data-view="ai" type="button"><i>✦</i><span>教官</span></button>
+  <button data-view="gacha" type="button"><i>◆</i><span>報酬</span></button>
+</nav>
+
+<!-- ═══════════ シート ═══════════ -->
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-back" data-close></div>
+  <div class="sheet-body">
+    <div class="sheet-head">
+      <b id="sheetTitle">設定</b>
+      <button class="icon-btn" data-close type="button">✕</button>
+    </div>
+    <div class="sheet-main" id="sheetMain"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="js/store.js"></script>
+<script src="js/measure.js"></script>
+<script src="js/score.js"></script>
+<script src="js/rank.js"></script>
+<script src="js/insight.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/blade.js"></script>
+<script src="js/chase.js"></script>
+<script src="js/gacha.js"></script>
+<script src="js/today.js"></script>
+<script src="js/cal.js"></script>
+<script src="js/rankview.js"></script>
+<script src="js/aiview.js"></script>
+<script src="js/gachaview.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
